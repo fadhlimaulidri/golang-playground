@@ -41,21 +41,14 @@ func handleRequests() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var el Env
-	json.Unmarshal([]byte(envlocal), &el)
-	// fmt.Printf("base url: %s, endpoint: %s, port: %s ", el.Base_url, el.Endpoint, el.Port)
+	var env Env
+	json.Unmarshal([]byte(envlocal), &env)
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/articles", allArticles)
-	log.Fatal(http.ListenAndServe(el.Port, nil))
+	log.Fatal(http.ListenAndServe(env.Base_url+":"+env.Port, nil))
 }
 
 func main() {
-	// Articles = []Article{
-	// 	Article{Title: "Hello", Desc: "Article Description", Content: "Article Content"},
-	// 	Article{Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
-	// }
-
 	handleRequests()
-
 }
