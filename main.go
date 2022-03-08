@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"github.com/subosito/gotenv"
 )
 
-type Env struct {
+type Eenv struct {
 	Base_url string
 	Endpoint string
 	Port     string
@@ -21,6 +23,10 @@ type Article struct {
 }
 
 type Articles []Article
+
+func init() {
+	gotenv.Load()
+}
 
 func allArticles(w http.ResponseWriter, r *http.Request) {
 	articles := Articles{
@@ -41,8 +47,10 @@ func handleRequests() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var env Env
+	var env Eenv
 	json.Unmarshal([]byte(envlocal), &env)
+
+	fmt.Println(os.Getenv("ENVIRONTMENT"))
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/articles", allArticles)
@@ -50,5 +58,6 @@ func handleRequests() {
 }
 
 func main() {
+	log.Println(os.Getenv("APP_ID"))
 	handleRequests()
 }
