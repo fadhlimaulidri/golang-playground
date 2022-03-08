@@ -1,6 +1,10 @@
-
 {
     "base_url": "localhost",
-    "endpoint": "bla",
+    "endpoint": [
+        "/",
+        "/home",
+        "/article",
+        "/local"
+    ],
     "port": "8080"
 }

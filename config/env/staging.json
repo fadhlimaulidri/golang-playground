@@ -1,0 +1,10 @@
+{
+    "base_url": "localhost",
+    "endpoint": [
+        "/",
+        "/home",
+        "/article",
+        "/staging"
+    ],
+    "port": "8080"
+}
