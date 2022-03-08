@@ -12,6 +12,6 @@ curl localhost:8080/staging
 
 you get the response `404`
 
-then change your `ENVIRONEMENT` to `staging`
+then change your `ENVIRONMENT` to `staging`
 
 make request and you get the response `200`
