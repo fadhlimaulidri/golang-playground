@@ -11,7 +11,7 @@ import (
 	"github.com/subosito/gotenv"
 )
 
-type Eenv struct {
+type Env struct {
 	Base_url string
 	Endpoint []string
 	Port     string
@@ -33,10 +33,6 @@ type Article struct {
 
 type Articles []Article
 
-func init() {
-	gotenv.Load()
-}
-
 func Find(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -57,14 +53,7 @@ func allArticles(w http.ResponseWriter, r *http.Request) {
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	configfile := "config/env/" + os.Getenv("ENVIRONTMENT") + ".json"
-	envlocal, err := ioutil.ReadFile(configfile)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	var env Eenv
-	json.Unmarshal([]byte(envlocal), &env)
+	env := loadEnvironment()
 	found := Find(env.Endpoint, "/")
 
 	if !found {
@@ -79,15 +68,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func stagingPage(w http.ResponseWriter, r *http.Request) {
-	configfile := "config/env/" + os.Getenv("ENVIRONTMENT") + ".json"
-	envlocal, err := ioutil.ReadFile(configfile)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	var env Eenv
-	json.Unmarshal([]byte(envlocal), &env)
-
+	env := loadEnvironment()
 	found := Find(env.Endpoint, "/staging")
 	if !found {
 		fmt.Println("Page not found")
@@ -100,16 +81,23 @@ func stagingPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
+func loadEnvironment() Env {
+	gotenv.Load()
+	fmt.Println(os.Getenv("ENVIRONTMENT"))
+
 	configfile := "config/env/" + os.Getenv("ENVIRONTMENT") + ".json"
 	envlocal, err := ioutil.ReadFile(configfile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var env Eenv
+	var env Env
 	json.Unmarshal([]byte(envlocal), &env)
+	return env
 
-	fmt.Println(os.Getenv("ENVIRONTMENT"))
+}
+
+func main() {
+	env := loadEnvironment()
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/articles", allArticles)
