@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/subosito/gotenv"
 )
 
@@ -33,7 +35,7 @@ type Article struct {
 
 type Articles []Article
 
-func Find(s []string, e string) bool {
+func find(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
 			return true
@@ -54,7 +56,7 @@ func allArticles(w http.ResponseWriter, r *http.Request) {
 
 func homePage(w http.ResponseWriter, r *http.Request) {
 	env := loadEnvironment()
-	found := Find(env.Endpoint, "/")
+	found := find(env.Endpoint, "/")
 
 	if !found {
 		fmt.Println("Page not found")
@@ -69,7 +71,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 func stagingPage(w http.ResponseWriter, r *http.Request) {
 	env := loadEnvironment()
-	found := Find(env.Endpoint, "/staging")
+	found := find(env.Endpoint, "/staging")
 	if !found {
 		fmt.Println("Page not found")
 	}
@@ -99,8 +101,23 @@ func loadEnvironment() Env {
 func main() {
 	env := loadEnvironment()
 
-	http.HandleFunc("/", homePage)
-	http.HandleFunc("/articles", allArticles)
-	http.HandleFunc("/staging", stagingPage)
-	log.Fatal(http.ListenAndServe(env.Base_url+":"+env.Port, nil))
+	router := mux.NewRouter()
+
+	router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	router.HandleFunc("/", homePage)
+	router.HandleFunc("/articles", allArticles)
+	router.HandleFunc("/staging", stagingPage)
+	http.Handle("/", router)
+
+	srv := &http.Server{
+		Handler: router,
+		Addr:    env.Base_url + ":" + env.Port,
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+	log.Fatal(srv.ListenAndServe())
 }
